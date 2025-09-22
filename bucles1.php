@@ -2,7 +2,7 @@
 <HEAD><TITLE> EJ1B – Conversor decimal a binario</TITLE></HEAD>
 <BODY>
 <?php
-$num="128";
+$num="168";
 $binario="";
 while ($num>=1) {
     $binario=$num%2 . $binario;
