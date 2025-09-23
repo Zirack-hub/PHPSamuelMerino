@@ -3,12 +3,13 @@
 <BODY>
 <?php
 $num="168";
+$numOriginal = $num;
 $binario="";
 while ($num>=1) {
     $binario=$num%2 . $binario;
     $num=(int)($num/2);
 }
-echo "El número en binario es: " . $binario;
+echo "El número $numOriginal en binario es: " . $binario;
 ?>
 </BODY>
 </HTML>
