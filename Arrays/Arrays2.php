@@ -7,6 +7,10 @@ $factorial= 1;
 $impares=[];
 $num=1;
 $sumatorio=0;
+$medImp=0;
+$contPar=0;
+$contImpar=0;
+$medPar=0;
 while ($contador <20) {
     if ($num%2!=0) {
         
@@ -27,8 +31,18 @@ for ($i=0; $i <count($impares) ; $i++) {
     echo "<td>$impares[$i]</td>";
     echo "<td>$sumatorio</td>";
     echo "</tr>";
+    if ($i==0 || $i%2==0) {
+        $medPar+=$impares[$i];
+        $contPar++;
+    }else {
+        $medImp+=$impares[$i];
+        $contImpar++;
+    }
 }
 echo "</table>";
+echo "<br>";
+echo "Media de las posiciones impares: ". $medImp/$contImpar. "<br>";
+echo "Media de las posciones pares: ". $medPar/$contImpar;
 ?>
 </BODY>
 </HTML>
