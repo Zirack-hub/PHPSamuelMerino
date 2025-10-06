@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Combinados</title>
+</head>
+<body>
+  <h1>Combinados</h1>
+
+  <form action="./Cambio.php" method="post">
+      <label>Primer número:</label>
+      <input type="number" name="num" required><br><br>
+
+
+      <label>Operación:</label>
+      <select name="operacion" required>
+        <option value ="bin">Binario (2)</option>
+        <option value="octal">Octal (8)</option>
+        <option value="hexa">Hexadecimal (16)</option>
+        <option value="todos">Todos (2, 8, 16)</option>
+      </select><br><br>
+
+    <input type="submit" value="Calcular">
+  </form>
+</body>
+</html>
