@@ -5,13 +5,12 @@ require_once("./funciones.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-   $j1 = limpiar($_REQUEST['nombre1']);
-   $j2 = limpiar($_REQUEST{'nombre2'});
-   $j3 = limpiar($_REQUEST{'nombre3'});
-   $j4 = limpiar($_REQUEST{'nombre4'});
-   $cartas = (int)limpiar($_REQUEST{'numcartas'});
-   $apuesta = limpiar($_REQUEST{'apuesta'});
-
+   $j1 = limpiar($_POST['nombre1']);
+   $j2 = limpiar($_POST{'nombre2'});
+   $j3 = limpiar($_POST{'nombre3'});
+   $j4 = limpiar($_POST{'nombre4'});
+   $cartas = (int)limpiar($_POST{'numcartas'});
+   $apuesta = limpiar($_POST{'apuesta'});
    $baraja =[
     '1C' => 1, '1D' =>1, '1T' =>1, '1P' =>1,
     '2C' => 2, '2D' =>2, '2T' =>2, '2P' =>2,
@@ -25,26 +24,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     'KC' => 0.5, 'KD' =>0.5, 'KT' =>0.5, 'KP' =>0.5,
     ];
 
-
-    $j1ARR =[];
-    $j2ARR =[];
-    $j3ARR =[];
-    $j4ARR =[];
+    $j1ARR =array();
+    $j2ARR =array();
+    $j3ARR =array();
+    $j4ARR =array();
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j1ARR);
+        robarCarta($baraja, $j1ARR);
     };
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j2ARR);
+        robarCarta($baraja, $j2ARR);
     };
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j3ARR);
+        robarCarta($baraja, $j3ARR);
     };
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j4ARR);
+        robarCarta($baraja, $j4ARR);
     };
 
     $mano1=contarMano($j1ARR);
