@@ -1,9 +1,10 @@
 <?php
 
 
-require_once("./funciones.php")
+require_once("./funciones.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
    $j1 = limpiar($_REQUEST['nombre1']);
    $j2 = limpiar($_REQUEST{'nombre2'});
    $j3 = limpiar($_REQUEST{'nombre3'});
@@ -31,26 +32,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $j4ARR =[];
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j1ARR)
-    }
+        extraerCarta($baraja, $j1ARR);
+    };
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j2ARR)
-    }
+        extraerCarta($baraja, $j2ARR);
+    };
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j3ARR)
-    }
+        extraerCarta($baraja, $j3ARR);
+    };
 
     for ($i=0; $i < $cartas ; $i++) { 
-        extraerCarta($baraja, $j4ARR)
-    }
+        extraerCarta($baraja, $j4ARR);
+    };
 
     $mano1=contarMano($j1ARR);
     $mano2=contarMano($j2ARR);
     $mano3=contarMano($j3ARR);
     $mano4=contarMano($j4ARR);
 
+    $ganadores=ganadores($mano1,$mano2,$mano3,$mano4);
 
 }
 
