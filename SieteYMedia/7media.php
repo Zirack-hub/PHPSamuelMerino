@@ -24,6 +24,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     'KC' => 0.5, 'KD' =>0.5, 'KT' =>0.5, 'KP' =>0.5,
     ];
 
+    $manos = [
+        'j1' => contar,
+        'j2' => $mano2,
+        'j3' => $mano3,
+        'j4' => $mano4,
+    ];
+
     $j1ARR =array();
     $j2ARR =array();
     $j3ARR =array();
@@ -45,12 +52,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         robarCarta($baraja, $j4ARR);
     };
 
-    $mano1=contarMano($j1ARR);
-    $mano2=contarMano($j2ARR);
-    $mano3=contarMano($j3ARR);
-    $mano4=contarMano($j4ARR);
+    $manos = [
+        'j1' => contarMano($j1ARR),
+        'j2' => contarMano($j1ARR),
+        'j3' => contarMano($j1ARR),
+        'j4' => contarMano($j1ARR),
+    ];
 
-    $ganadores=ganadores($mano1,$mano2,$mano3,$mano4);
+    $ganadores=ganadores($manos);
 
 }
 

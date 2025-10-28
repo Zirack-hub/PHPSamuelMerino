@@ -29,29 +29,17 @@ function extraerIniciales($nombre){
 }
 
 
-function ganadores($mano1, $mano2, $mano3, $mano4){
-    $manos = [
-        'j1' => $mano1,
-        'j2' => $mano2,
-        'j3' => $mano3,
-        'j4' => $mano4,
-    ];
+function ganadores($manos){
 
-    $valor_max = 0;
-    $ganadores = [];
-
-    foreach ($manos as $jugador => $valor) {
-        if ($valor <= 7.5) {
-            if ($valor > $valor_max) {
-                $valor_max = $valor;
-                $ganadores = [$jugador => $valor]; // nuevo máximo → reinicio ganadores
-            } elseif ($valor == $valor_max) {
-                $ganadores[$jugador] = $valor; // empate → agrego jugador
-            }
-        }
-    }
-
-    print_r($ganadores);
+    $ganadores = array_filter($manos, function($valor){
+        return $valor <= 7.5;
+    });
+    
+    arshort($ganadores);
+    $ganadores = array_filter($ganadores, function($valor){
+        return $valor == $ganadores[0] ;
+    });
+    print_r($ganadres);
     return $ganadores;
 }
 
