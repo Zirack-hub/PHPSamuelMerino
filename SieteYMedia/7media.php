@@ -24,12 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     'KC' => 0.5, 'KD' =>0.5, 'KT' =>0.5, 'KP' =>0.5,
     ];
 
-    $manos = [
-        'j1' => contar,
-        'j2' => $mano2,
-        'j3' => $mano3,
-        'j4' => $mano4,
-    ];
+    
 
     $j1ARR =array();
     $j2ARR =array();
@@ -53,14 +48,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     };
 
     $manos = [
-        'j1' => contarMano($j1ARR),
-        'j2' => contarMano($j1ARR),
-        'j3' => contarMano($j1ARR),
-        'j4' => contarMano($j1ARR),
+        $j1 => contarMano($j1ARR),
+        $j2 => contarMano($j2ARR),
+        $j3 => contarMano($j3ARR),
+        $j4 => contarMano($j4ARR),
     ];
 
     $ganadores=ganadores($manos);
-
+    dineroRepartir($apuesta, $ganadores);
+    mostrarCartas($j1, $j2, $j3, $j4, $j1ARR, $j2ARR, $j3ARR, $j4ARR);
 }
 
 
