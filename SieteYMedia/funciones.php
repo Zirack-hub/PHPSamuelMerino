@@ -110,8 +110,39 @@ function dineroRepartir($apuesta, $ganadores) {
         $nombre = array_key_first($ganadores);
         echo "El jugador $nombre ganó con $puntuacion puntos y recibe $premio €.<br>";
     }
+    return $premio;
 }
 
+function generarFichero($iniciales, $ganadores, $premio){
+    $fecha = date("d-m-Y-H-i-s");
+    if (!empty($ganadores)){
+        $repartido = $premio / count($ganadores);
+    }else{
+        $repartido=0;
+    }
+    $premios = count($ganadores);
+    
+    // Extraemos las iniciales de los ganadores
+    $iniciales_ganad = array_map('extraerIniciales', array_keys($ganadores));
+
+    $archivo = "";
+
+    foreach ($iniciales as $inicial => $puntuacion) {
+        if (in_array($inicial,$iniciales_ganad)) {
+            $dinero = $repartido;
+        }
+        else {
+            $dinero = 0;
+        }
+        $archivo .= "$inicial#$puntuacion#$dinero\n";
+    }
+
+    $archivo .= "TOTALPREMIOS#$premios#$repartido\n";
+
+    $f1 = fopen("./ficheros/$fecha.txt", "a+");
+    fwrite($f1, $archivo);
+    fclose($f1);
+}
 
 
 ?>
