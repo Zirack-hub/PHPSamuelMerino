@@ -35,7 +35,6 @@ function ganadores($manos){
         return $valor <= 7.5;
     });
 
-    echo "\n";
 
     if (empty($ganadores)) {
         echo "No hay ganadores (todos se pasaron de 7.5)\n";
