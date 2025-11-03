@@ -17,7 +17,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     );
 
    $jugadores =  crearJugadoresyRepartirCartas($baraja, $nombre1, $nombre2, $nombre3, $nombre4);
-
    encontrarJugada($jugadores);
    
    $ganadores = encontrarGanador($jugadores);

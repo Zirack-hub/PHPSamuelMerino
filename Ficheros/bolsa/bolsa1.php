@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IBEX35 sin hora</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBEX365 sin hora</title>
 </head>
 <body>
+    <h2>Leer y mostrar IBEX35</h2>
     <?php
-        $archivo = (file("ibex35.txt"));
         require_once("funciones_bolsa.php");
-        
-        echo"<pre>";
-        mostrarArchivo($archivo);
-        echo"</pre>";
 
+        echo "<pre>";
+        leerArchivo_y_Mostrar();
+        echo "</pre>";
     ?>
 </body>
 </html>
-
