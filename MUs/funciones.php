@@ -72,6 +72,141 @@ function elegirJugada($repeticiones){
 }
 
 function mejorPuntuacion($jugadores){
-    foreach
+    $puntitos = array();
+    $ganadores = array();
+    foreach ($jugadores as $jugador) {
+        
+            array_push($puntitos, $jugador['puntos']);
+        
+    }
+
+    $puntitos=array_filter($puntitos, function($valor){
+        return $valor <= 40;
+    });
+    if (in_array(31, $puntitos)) {
+        $puntitos=array_filter($puntitos, function($valor){
+        return $valor == 31;
+    });
+    }elseif (in_array(40, $puntitos)) {
+        $puntitos=array_filter($puntitos, function($valor){
+        return $valor == 40;
+    });
+    }
+     $maxValor=max($puntitos);
+    foreach ($jugadores as $jugador) {
+        if ($jugador['puntos']==$maxValor){
+            array_push($ganadores, $jugador);
+        }
+    }
+
+    return $ganadores;
+}
+
+function ganadorJugada($jugadores){
+    $maxJugada=0;
+    $jugadas=array();
+    $ganadores=array();
+    foreach ($jugadores as $jugador) {
+        array_push($jugadas, $jugador['jugada']);
+    }
+    $maxJugada=max($jugadas);
+    foreach ($jugadores as $jugador) {
+        if($jugador['jugada']==$maxJugada){
+            array_push($ganadores, $jugador);
+        }
+    }
+
+    return $ganadores;
+}
+
+function repartirDinero($pganadores, $jganadores, $apuesta){
+    echo"Ganador por <b>Puntos</b>: ";
+    echo"<br>";
+    if(count($pganadores)>1){
+        echo "-Los ganadores ";
+        foreach ($pganadores as $ganador) {
+            echo $ganador['nombre'];
+            echo " ";
+        }
+        echo" Han ganado ". $apuesta/2/count($pganadores);
+    }else{
+        echo"-El jugador ". $pganadores[0]['nombre']." ha ganado ". $apuesta/2;
+    }
+     echo"<br>";
+     echo "------------------------------------------------------------------";
+     echo"<br>";
+     echo"Ganador por <b>Jugada</b>: ";
+     echo"<br>";
+     if(count($jganadores)>1){
+        echo "-Los ganadores ";
+        foreach ($jganadores as $ganador) {
+            echo $ganador['nombre'];
+            echo " ";
+        }
+        echo" Han ganado ". $apuesta/2/count($jganadores);
+    }else{
+        echo"-El jugador ". $jganadores[0]['nombre']." ha ganado ". $apuesta/2;
+    }
+}
+
+function mostrarCartas($jugadores) {
+    echo "<table border='1' cellpadding='5'>";
+
+    foreach ($jugadores as $jugador) {
+        echo "<tr>";
+        echo "<td>" . $jugador['nombre'] . "</td>";
+        foreach ($jugador['cartas'] as $carta=>$valor) {
+            $ruta = "./images/" . $carta . ".PNG";
+            echo "<td><img src='$ruta' alt='$carta' width='80' height='120'></td>";
+        }
+    }    
+}
+
+
+function generarFichero($jugadores, $jganadores,$pganadores, $premio){
+    $mitad= $premio/2;
+    $fecha = date("d-m-Y-H-i-s");
+    if (!empty($jganadores)){
+        $repartidoj = $premio /2/ count($jganadores);
+    }else{
+        $repartidoj=0;
+    }
+    $premiosj = count($jganadores);
+    if (!empty($pganadores)){
+        $repartidop = $premio /2/ count($pganadores);
+    }else{
+        $repartidop=0;
+    }
+    $premiosp = count($pganadores);
+    $archivo = "";
+    foreach ($jugadores as $jugador=>$valor) {
+        $premiop=0;
+        foreach ($pganadores as $ganador => $value) {
+            if($jugador['nombre']==$ganador['nombre']){
+            $premiop= $repartidop;
+            }
+        }
+        
+        $archivo .= $jugador['nombre'] . '#' . $jugador['puntos'] . '#' . $premiop . "\n";
+    }
+
+    $archivo .= "TOTALPREMIOSPUNTUACION#$premiosp#$mitad\n";
+
+    foreach ($jugadores as $jugador=>$valor) {
+        $premioj=0;
+        foreach ($jganadores as $ganador => $value) {
+            if($jugador['nombre']==$ganador['nombre']){
+            $premioj= $repartidoj;
+            }
+        }
+        
+        $archivo .= $jugador['nombre'] . '#' . $jugador['puntos'] . '#' . $premioj . "\n";
+    }
+
+    $archivo .= "TOTALPREMIOSJUGADA#$premiosj#$mitad\n";
+    
+    $f1 = fopen("./ficheros/$fecha.txt", "a+");
+    fwrite($f1, $archivo);
+    fclose($f1);
 }
 ?>

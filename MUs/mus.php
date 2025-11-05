@@ -27,9 +27,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     calcularPuntos($jugadores);
     encontrarJugada($jugadores);
+    $pganadores=mejorPuntuacion($jugadores);
+    $jganadores=ganadorJugada($jugadores);
+    repartirDinero($pganadores, $jganadores, $apuesta);
+    mostrarCartas($jugadores);
+    generarFichero($jugadores, $jganadores,$pganadores, $apuesta);
     
-    var_dump($jugadores);
     
+
 
 
 
