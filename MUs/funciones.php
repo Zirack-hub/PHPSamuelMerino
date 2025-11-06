@@ -178,32 +178,30 @@ function generarFichero($jugadores, $jganadores,$pganadores, $premio){
         $repartidop=0;
     }
     $premiosp = count($pganadores);
-    $archivo = "";
-    foreach ($jugadores as $jugador=>$valor) {
+   $archivo = "";
+    $archivo .= "PUNTUACIONES: \n";
+    foreach ($jugadores as $jugador) {
         $premiop=0;
-        foreach ($pganadores as $ganador => $value) {
+        foreach ($pganadores as $ganador) {
             if($jugador['nombre']==$ganador['nombre']){
             $premiop= $repartidop;
             }
         }
-        
-        $archivo .= $jugador['nombre'] . '#' . $jugador['puntos'] . '#' . $premiop . "\n";
+        $archivo .= $jugador['nombre'] . '##' . $jugador['puntos'] . '##' . $premiop . "\n";
     }
-
-    $archivo .= "TOTALPREMIOSPUNTUACION#$premiosp#$mitad\n";
-
-    foreach ($jugadores as $jugador=>$valor) {
+    $archivo .= "TOTAL PREMIOS PUNTUACION##$premiosp##$mitad\n";
+    $archivo .= "\n";
+    $archivo .= "JUGADAS: \n";
+    foreach ($jugadores as $jugador) {
         $premioj=0;
-        foreach ($jganadores as $ganador => $value) {
+        foreach ($jganadores as $ganador) {
             if($jugador['nombre']==$ganador['nombre']){
             $premioj= $repartidoj;
             }
         }
-        
-        $archivo .= $jugador['nombre'] . '#' . $jugador['puntos'] . '#' . $premioj . "\n";
+        $archivo .= $jugador['nombre'] . '##' . $jugador['puntos'] . '##' . $premioj . "\n";
     }
-
-    $archivo .= "TOTALPREMIOSJUGADA#$premiosj#$mitad\n";
+    $archivo .= "TOTAL PREMIOS JUGADA##$premiosj##$mitad\n";
     
     $f1 = fopen("./ficheros/$fecha.txt", "a+");
     fwrite($f1, $archivo);
