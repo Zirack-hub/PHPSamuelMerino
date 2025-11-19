@@ -1,0 +1,13 @@
+PUNTUACIONES: 
+Malenia BladeOfMiquella##27##0
+Miquella HDP##27##0
+Hornet GOD##31##45000
+Shallan Davar##19##0
+TOTAL PREMIOS PUNTUACION##1##45000
+
+JUGADAS: 
+Malenia BladeOfMiquella##27##0
+Miquella HDP##27##22500
+Hornet GOD##31##0
+Shallan Davar##19##22500
+TOTAL PREMIOS JUGADA##2##45000
