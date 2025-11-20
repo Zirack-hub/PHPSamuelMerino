@@ -15,11 +15,35 @@ function closeBD(&$conn){
   $conn=null;
 }
 
-function select($sentencia, $conn){
+function selectASSOC($sentencia, $conn) {
     $stmt = $conn->prepare("$sentencia");
     $stmt->execute();
-    return $stmt;
+    $stmt->setFetchMode(PDO::FETCH_ASSOC);
+    return $stmt->fetchAll();
 }
+
+
+function selectCOL($sentencia, $conn){
+    $stmt = $conn->prepare("$sentencia");
+    $stmt->execute();
+    return $stmt->fetchColumn();
+}
+
+function mostrarOpciones($clave, $resultado, $etiqueta,$mostrar=null){
+    if (empty($mostrar)) {
+        $mostrar = $clave;
+    }
+
+    echo "<label for='opcion'>$etiqueta:</label>";
+    echo "<select id='opcion' name='opcion'>";
+    foreach ($resultado as $row) {
+        echo "<option value='" . $row[$clave] . "'>" . $row[$mostrar] . "</option>";
+    }
+    echo "</select>";
+}
+
+
+
 
 //function insert($sentencia, $conn,$tabla){
 //    $stmt = select($conn, "Describe $tabla");

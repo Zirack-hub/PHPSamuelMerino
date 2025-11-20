@@ -54,19 +54,18 @@ $tabla="almacen";
         $conn = openBD($dbname);
         echo "Connected successfully";
         echo "</br>";
+
         $stmt = select("SELECT MAX(NUM_ALMACEN)FROM almacen", $conn);
         $codigo = $stmt->fetchColumn() +1;
         echo "Numero de almacen: " . $codigo;
         echo "</br>";
         echo "Localidad: " . $nombre;
-        $stmt = select("", $conn);
-        $stmt->setFetchMode(PDO::FETCH_ASSOC);
-        $campos = $stmt->fetchAll();
-        var_dump($campos);
-        //$stmt = $conn->prepare("INSERT INTO categoria(ID_CATEGORIA,NOMBRE) VALUES (:id_categoria,:nombre)");
-        //$stmt->bindParam(':id_categoria', $id_cat);
-        //$stmt->bindParam(':nombre', $nombre);
-        //$stmt->execute();
+
+        $stmt = $conn->prepare("INSERT INTO almacen(NUM_ALMACEN,LOCALIDAD) VALUES (:num_almacen,:localidad)");
+        $stmt->bindParam(':num_almacen', $codigo);
+        $stmt->bindParam(':localidad', $nombre);
+        $stmt->execute();
+        closeBD($conn);
 
         closeBD($conn);
     }
