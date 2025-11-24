@@ -24,8 +24,27 @@
             mostrarOpciones("ID_PRODUCTO", $resultado, "PRODUCTO", "NOMBRE");
             
             ?>
-            Cantidad de productos <input type="text" name="Cantidad de productos">
+            Cantidad de productos <input type="text" name="cantidad">
             <input type="submit" name="submit" value="Añadir">
         </form>
 </body>
 </html>
+<?php
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $almacen = limpiar_campos($_POST["ALMACEN"]);
+        $producto = limpiar_campos($_POST["PRODUCTO"]);
+        $cantidad = limpiar_campos($_POST["cantidad"]);
+
+        $stmt = $conn->prepare("INSERT INTO almacena(NUM_ALMACEN,ID_PRODUCTO,CANTIDAD) VALUES(:almacen,:producto,:cantidad)");
+        $stmt->bindParam(':almacen', $almacen);
+        $stmt->bindParam(':producto', $producto);
+        $stmt->bindParam(':cantidad', $cantidad);
+        $stmt->execute();
+        closeBD($conn);
+
+    }
+
+
+
+
+?>
