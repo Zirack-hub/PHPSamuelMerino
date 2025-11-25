@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Alta departamentos</title>
+    <title>Cambiar departamento</title>
 </head>
 <body>
-    <h1>Alta empleados</h1>
-        <p>Dar de alta empleados<p>
+    <h1>Cambiar departamento</h1>
+        <p>Cambiar departamento<p>
         <div class="card-body">
         <form name="alta" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
          <?php
@@ -17,17 +17,15 @@
 
             $conn = $conn = openBD('empleados');
 
+                $resultado = selectASSOC("SELECT dni FROM empleado", $conn);
+                mostrarOpciones("dni", $resultado, "DNI");
+
                 $resultado = selectASSOC("SELECT cod_dpto, nombre_dpto FROM departamento", $conn);
                 mostrarOpciones("cod_dpto", $resultado, "DEPARTAMENTO", "nombre_dpto");
             
 
             ?>  
-            DNI <input type="text" name="DNI">  
-            Nombre <input type="text" name="nombre">
-            Apellidos <input type="text" name="apellido">
-            Salario <input type="text" name="salario">
-            Fecha Naciminiento <input type="date" name="FecNa">
-            <input type="submit" name="submit" value="Añadir">
+          <input type="submit" name="submit" value="Cambiar Departamento"> 
         </form>
 </body>
 </html>
@@ -36,16 +34,12 @@ require_once("./funciones/funciones.php");
 require_once("./funciones/fbd.php");
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $dni = limpiar_campos($_POST["DNI"]);
-    $nombre = limpiar_campos($_POST["nombre"]);
-    $apellido = limpiar_campos($_POST["apellido"]);
-    $salario = limpiar_campos($_POST["salario"]);
-    $fecNa = limpiar_campos($_POST["FecNa"]);
     $departamento = limpiar_campos($_POST["DEPARTAMENTO"]);
     $dbname = "empleados";
     $codigo=0;
     try {
         $conn->beginTransaction();
-            $stmt = $conn->prepare("INSERT INTO empleado(dni,nombre, apellidos, salario, fecha_nac) VALUES (:dni,:nombre,:apellido,:salario,:fecna)");
+            $stmt = $conn->prepare("UPDATE emple_depart SET fecha_fin = :fecfin WHERE dni = :dni AND fecha_fin IS NULL");
                 $stmt->bindParam(':dni', $dni);
                 $stmt->bindParam(':nombre', $nombre);
                 $stmt->bindParam(':apellido', $apellido);
