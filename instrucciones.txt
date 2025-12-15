@@ -1,0 +1,3 @@
+Instrucciones:
+ 1. Desplegar en el servidor FTP la aplicación web empleados
+ 
