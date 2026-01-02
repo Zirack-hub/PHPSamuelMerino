@@ -18,25 +18,39 @@ También se puede emplear $_REQUEST, que contiene la unión de $_COOKIE, $_POST 
 
 // CREAR UNA COOKIE
 // Uso de la función setcookie para asignar valor la cookie usuario
+
 $cookie_name = "usuario";
-$cookie_value = "Alfonso Rebolleda";
-setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/"); // 86400 segundos = 1 día
 
-?>
-<html>
-<body>
-
-<?php
-//Se comprueba si la cookie existe
-if(!isset($_COOKIE[$cookie_name])) {
-     echo "Cookie " . $cookie_name . " no definida!!!<br>";
-} else {
-     echo "Cookie " . $cookie_name . " definida!!!<br>";
-     echo "Nombre de la cookie: " . $_COOKIE[$cookie_name];
+// Si el usuario envía el formulario
+if (isset($_POST['nombre'])) {
+    $cookie_value = $_POST['nombre'];
+    setcookie($cookie_name, $cookie_value, time() + (86400 * 1), "/"); // 1 día
+    header("Refresh:0"); // recarga la página para leer la cookie
 }
 ?>
 
-<p><strong>Importante:</strong> Recarga/refresca la p&aacutegina para obtener el valor de la cookie</p>
+<html>
+<body>
+
+<h2>Introduce tu nombre</h2>
+
+<form method="post">
+    <input type="text" name="nombre" required>
+    <input type="submit" value="Guardar nombre">
+</form>
+
+<hr>
+
+<?php
+// Comprobamos si la cookie existe
+if (!isset($_COOKIE[$cookie_name])) {
+    echo "Cookie <strong>$cookie_name</strong> no definida.<br>";
+    echo "<p><strong>Importante:</strong> Introduce tu nombre y envía el formulario.</p>";
+} else {
+    echo "Cookie <strong>$cookie_name</strong> definida.<br>";
+    echo "Nombre guardado: <strong>" . $_COOKIE[$cookie_name] . "</strong>";
+}
+?>
 
 </body>
 </html>

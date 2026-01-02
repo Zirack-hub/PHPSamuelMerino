@@ -15,7 +15,7 @@
             require_once ("./funciones/funciones.php");
             require_once ("./funciones/fbd.php");
 
-            $conn = $conn = openBD('comprasweb');
+            $conn = openBD('comprasweb');
 
             
             
@@ -41,11 +41,11 @@
         $ciudad = limpiar_campos($_POST["city"]);
 
         if (preg_match('/^[0-9]{8}[A-Z]$/', $nif)) {
-        $comprobacion = selectCOL("SELECT NIF FROM CLIENTE WHERE NIF = '$nif",$conn);
-        if ($comprobacion!= null) {
+        $comprobacion = selectCOL("SELECT NIF FROM CLIENTE WHERE NIF = '$nif'",$conn);
+        if ($comprobacion == null) {
             try {
         $conn->beginTransaction();
-            $stmt = $conn->prepare("INSERT INTO ecliente(nif,nombre, apellidos, cp, direccion, ciudad) VALUES (:nif,:nombre,:apellido,:cp,:direccion,:ciudad)");
+            $stmt = $conn->prepare("INSERT INTO cliente(nif,nombre, apellido, cp, direccion, ciudad) VALUES (:nif,:nombre,:apellido,:cp,:direccion,:ciudad)");
                 $stmt->bindParam(':nif', $nif);
                 $stmt->bindParam(':nombre', $nombre);
                 $stmt->bindParam(':apellido', $apellido);
@@ -65,7 +65,7 @@
         echo "Código de error: " . $e->getCode() . "<br>";
         }
         }else{
-            Echo "No Puedes dar de alta dos usuarios con el mismo nif"
+            Echo "No Puedes dar de alta dos usuarios con el mismo nif";
         }
         } else {
         echo "El NIF debe contener 8 números y una letra mayuscula.";
