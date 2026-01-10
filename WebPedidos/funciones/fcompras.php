@@ -62,9 +62,9 @@ function eliminarProducto($id, $cantidad) {
 function comprobarCarrito($conn){
     $flag = true;
     foreach ($_SESSION['carrito'] as $producto => $cantidad){
-        $cotejar =  selectCol("SELECT SUM(CANTIDAD) AS TOTAL FROM ALMACENA WHERE ID_PRODUCTO = '$producto'", $conn);
+        $cotejar =  selectCol("SELECT QUANTITYINSTOCK FROM PRODUCTS WHERE PRODUCTCODE = '$producto'", $conn);
         if ($cantidad > $cotejar){
-            $nombre = selectCol("SELECT NOMBRE FROM PRODUCTO WHERE ID_PRODUCTO = '$producto'", $conn);
+            $nombre = selectCol("SELECT PRODUCTNAME FROM PRODUCTS WHERE PRODUCTCODE = '$producto'", $conn);
             echo ("La cantidad seleccionada del articulo $nombre no existe");
             $flag = false;
         }
@@ -72,54 +72,92 @@ function comprobarCarrito($conn){
     return $flag;
 }
 
-function realizarCompra($conn){
-    foreach ($_SESSION['carrito'] as $producto => $cantidad){
-        $cotejar =  selectCol("SELECT CANTIDAD FROM ALMACENA WHERE ID_PRODUCTO = '$producto'", $conn);
-            $cant = $cantidad;
-            while ($cant > 0){
-                $cotejar =  selectCol("SELECT CANTIDAD FROM ALMACENA WHERE ID_PRODUCTO = '$producto' AND CANTIDAD > 0 ORDER BY NUM_ALMACEN LIMIT 1", $conn);
-                try{
-                    $conn->beginTransaction();
-                if ($cotejar < $cant){
-                    $stmt = $conn->prepare("UPDATE ALMACENA SET CANTIDAD = CANTIDAD - :cotejar WHERE ID_PRODUCTO = :producto AND CANTIDAD > 0 ORDER BY NUM_ALMACEN LIMIT 1");
-                    $stmt->bindParam(':producto', $producto);
-                    $stmt->bindParam(':cotejar', $cotejar);
-                }else{
-                    $stmt = $conn->prepare("UPDATE ALMACENA SET CANTIDAD = CANTIDAD - :cantidad WHERE ID_PRODUCTO = :producto AND CANTIDAD > 0 ORDER BY NUM_ALMACEN LIMIT 1");
-                    $stmt->bindParam(':producto', $producto);
-                    $stmt->bindParam(':cantidad', $cant);
-                }
-                $stmt->execute();
-                $conn->commit(); 
-                $cant = $cant - $cotejar;
-                }
-                 catch(PDOException $e)
-                    {
-                    if ($conn && $conn->inTransaction()) {
-                        $conn->rollback();
-                    }
-                    echo "Connection failed: " . $e->getMessage();
-                    echo "Código de error: " . $e->getCode() . "<br>";
-                    }
-            }
-            
-            try{
-            $fecha = date("Y-m-d H:i:s"); 
-            $stmt = $conn->prepare("INSERT INTO compra(NIF, ID_PRODUCTO, FECHA_COMPRA, UNIDADES) VALUES (:NIF,:ID_PRODUCTO,:FECHA_COMPRA,:UNIDADES)");
-            $stmt->bindParam(':NIF', $_COOKIE['usuariocompras']);
-            $stmt->bindParam(':ID_PRODUCTO', $producto);
-            $stmt->bindParam(':FECHA_COMPRA', $fecha);
-            $stmt->bindParam(':UNIDADES', $cantidad);
-            $stmt->execute();
+
+function realizarCompra($conn, $pago){
+    $fecha = date("Y-m-d H:i:s");
+    $numero = selectCol("SELECT ORDERNUMBER FROM ORDERS ORDER BY ORDERNUMBER DESC LIMIT 1", $conn);
+    $numero += 1;
+    $status = "Unshipped";
+    $total = 0;
+    $orderlinenumber = 19;
+    
+    try{
+        $conn->beginTransaction();
+        $stmt = $conn->prepare("INSERT INTO ORDERS(ORDERNUMBER, ORDERDATE, REQUIREDDATE, SHIPPEDDATE, `STATUS`, COMMENTS, CUSTOMERNUMBER) VALUES (:ORDERNUMBER,:ORDERDATE,:REQUIREDDATE,NULL,:STATUS,NULL,:CUSTOMERNUMBER)");
+        $stmt->bindParam(':ORDERNUMBER', $numero);
+        $stmt->bindParam(':ORDERDATE', $fecha);
+        $stmt->bindParam(':REQUIREDDATE', $fecha);
+        $stmt->bindParam(':STATUS', $status);
+        $stmt->bindParam(':CUSTOMERNUMBER', $_COOKIE['usuariopedidos']);
+        $stmt->execute();
+        $conn->commit(); 
+    }
+    catch(PDOException $e){
+        if ($conn && $conn->inTransaction()) {
+            $conn->rollback();
         }
-        catch(PDOException $e)
-           {
+        echo "Connection failed: " . $e->getMessage();
+        echo "Codigo de error: " . $e->getCode() . "<br>";
+    }
+    
+    foreach ($_SESSION['carrito'] as $producto => $cantidad){
+        $precio = selectCOL("SELECT BUYPRICE FROM PRODUCTS WHERE PRODUCTCODE = '$producto'",$conn);
+        $precioTotal = $precio * $cantidad;
+        $total += $precioTotal;
+
+        try{
+            $conn->beginTransaction();
+            $stmt = $conn->prepare("UPDATE PRODUCTS SET QUANTITYINSTOCK = QUANTITYINSTOCK - :cantidad WHERE PRODUCTCODE = :producto");
+            $stmt->bindParam(':producto', $producto);
+            $stmt->bindParam(':cantidad', $cantidad);
+            $stmt->execute();
+            $conn->commit(); 
+        }
+        catch(PDOException $e){
             if ($conn && $conn->inTransaction()) {
                 $conn->rollback();
             }
             echo "Connection failed: " . $e->getMessage();
-            echo "Código de error: " . $e->getCode() . "<br>";
-           }
+            echo "C贸digo de error: " . $e->getCode() . "<br>";
+        }
+
+        try{
+            $conn->beginTransaction();
+            $stmt = $conn->prepare("INSERT INTO ORDERDETAILS(ORDERNUMBER, PRODUCTCODE, QUANTITYORDERED, PRICEEACH, ORDERLINENUMBER) VALUES (:ORDERNUMBER,:PRODUCTCODE,:QUANTITYORDERED,:PRICEEACH, :ORDERLINENUMBER)");
+            $stmt->bindParam(':ORDERNUMBER', $numero);
+            $stmt->bindParam(':PRODUCTCODE', $producto);
+            $stmt->bindParam(':QUANTITYORDERED', $cantidad);
+            $stmt->bindParam(':PRICEEACH', $precio);
+            $stmt->bindParam(':ORDERLINENUMBER', $orderlinenumber);
+            $stmt->execute();
+            $conn->commit(); 
+        }
+        catch(PDOException $e){
+            if ($conn && $conn->inTransaction()) {
+                $conn->rollback();
+            }
+            echo "Connection failed: " . $e->getMessage();
+            echo "Codigo de error: " . $e->getCode() . "<br>";
+        }
+    }
+
+    try{
+        $conn->beginTransaction();
+        $stmt = $conn->prepare("INSERT INTO PAYMENTS(CUSTOMERNUMBER, CHECKNUMBER, PAYMENTDATE, AMOUNT) VALUES (:CUSTOMERNUMBER,:CHECKNUMBER,:PAYMENTDATE,:AMOUNT)");
+        $stmt->bindParam(':CUSTOMERNUMBER', $_COOKIE['usuariopedidos']);
+        $stmt->bindParam(':CHECKNUMBER', $pago);
+        $stmt->bindParam(':PAYMENTDATE', $fecha);
+        $stmt->bindParam(':AMOUNT', $total);
+        $stmt->execute();
+        $conn->commit(); 
+    }
+    catch(PDOException $e){
+        if ($conn && $conn->inTransaction()) {
+            $conn->rollback();
+        }
+        echo "Connection failed: " . $e->getMessage();
+        echo "C贸digo de error: " . $e->getCode() . "<br>";
     }
 }
+
 ?>

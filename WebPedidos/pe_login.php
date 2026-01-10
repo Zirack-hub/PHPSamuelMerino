@@ -58,9 +58,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 setcookie($cookie_name, $registro, time() + (86400 * 30), "/");
                 echo "Has iniciado sesión como $name <br>";
                 echo "COMPRAS: <br>";
-                echo "<a href='./comprocli.php'> Ver compras</a><br>";
-                echo "HISTORIA: <br>";
-                echo "<a href='./comconscli.php'> Ver compras</a><br>";
+                echo "<a href='./pe_altaped.php'> Ver compras</a><br>";
+                echo "HISTORIAL: <br>";
+                echo "<a href='./pe_consped.php'> Ver historial</a><br>";
+                echo "STOCK: <br>";
+                echo "<a href='./pe_consprodstock.php'> Ver historial</a><br>";
+                echo "STOCK LINEAS PRODUCCION: <br>";
+                echo "<a href='./pe_constock.php'> Ver historial</a><br>";
                 
                 echo '
                         <form name="alta" action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '" method="post">

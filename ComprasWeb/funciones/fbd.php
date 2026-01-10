@@ -22,7 +22,7 @@ function closeBD(&$conn){
 
 function selectASSOC($sentencia, $conn) {
     $stmt = $conn->prepare("$sentencia");
-    $stmt->execute();e
+    $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
     return $stmt->fetchAll();
 }

@@ -8,5 +8,7 @@ function limpiar_campos($data) {
     return $data;
 }
 
-
+function comprobarNumero($value) {
+    return preg_match('/^[A-Z]{2}[0-9]{6}$/', $value);
+}
 ?>
