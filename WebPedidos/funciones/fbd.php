@@ -1,9 +1,11 @@
 <?php
 
 
-function openBD($bdname) {
+function openBD() {
     try {
-        $conn = new PDO("mysql:host=localhost;dbname=$bdname","root", "rootroot");
+        $conn = new PDO("mysql:host=localhost;dbname=webpedidos;charset=utf8",
+            "root",
+            "rootroot");
         $conn->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
         return $conn;
         }

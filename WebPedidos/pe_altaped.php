@@ -1,4 +1,7 @@
 <?php
+    if(!isset($_COOKIE['usuariopedidos'])) {
+        header("Location: ./pe_login.php");
+    }
     session_start();
     require_once ("./funciones/funciones.php");
     require_once ("./funciones/fbd.php");
@@ -21,7 +24,7 @@
             <?php
             
 
-            $conn = openBD('webpedidos');
+            $conn = openBD(');
             
             $resultado = selectASSOC("SELECT PRODUCTCODE, PRODUCTNAME FROM PRODUCTS WHERE QUANTITYINSTOCK > 0", $conn);
             mostrarOpciones("PRODUCTCODE", $resultado, "PRODUCTS", "PRODUCTNAME");
