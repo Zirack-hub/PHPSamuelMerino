@@ -1,12 +1,22 @@
 <?php
-    if(!isset($_COOKIE['usuariopedidos'])) {
-        header("Location: ./pe_login.php");
-    }
-    session_start();
-    require_once ("./funciones/funciones.php");
-    require_once ("./funciones/fbd.php");
-    require_once ("./funciones/fcompras.php");
-    iniciarCarrito();
+session_start();
+ob_start();
+require_once "./funciones/funciones.php";
+require_once "./funciones/fbd.php";
+require_once "./funciones/fcompras.php";
+
+iniciarCarrito();
+
+if (!isset($_COOKIE['usuariopedidos'])) {
+    header("Location: ./pe_login.php");
+    exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST"
+    && isset($_POST["submit"])
+    && $_POST["submit"] === "Cerrar Sesion") {
+    cerrarSesion("usuariopedidos");
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -27,13 +37,18 @@
             $conn = openBD();
             
             $resultado = selectASSOC("SELECT PRODUCTCODE, PRODUCTNAME FROM PRODUCTS WHERE QUANTITYINSTOCK > 0", $conn);
-            mostrarOpciones("PRODUCTCODE", $resultado, "PRODUCTS", "PRODUCTNAME");
+            mostrarOpciones("PRODUCTCODE", $resultado, "PRODUCTOS", "PRODUCTNAME");
             
             ?>
             Cantidad de productos <input type="text" name="cantidad">
             <input type="submit" name="submit" value="Añadir">
             <input type="submit" name="submit" value="Eliminar">
             <input type="submit" name="submit" value="Finalizar Compra">
+            <br>
+            <input type="submit" name="submit" value="Cerrar Sesion">
+            <br>
+            <a href='./pe_inicio.php'> Volver Inicio</a><br>
+
 
         </form>
         <p>Carrito</p>
@@ -55,8 +70,8 @@
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $eleccion = limpiar_campos($_POST["submit"]);
 
-    $producto = isset($_POST["PRODUCTS"])
-        ? limpiar_campos($_POST["PRODUCTS"])
+    $producto = isset($_POST["PRODUCTOS"])
+        ? limpiar_campos($_POST["PRODUCTOS"])
         : null;
 
     $cantidad = isset($_POST["cantidad"])
@@ -74,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo '
                     <form name="alta" action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '" method="post">
                         <br><br>
-                        MetodoDepago(AA99999) <input type="text" name="pago">
+                        MetodoDepago(AA999999) <input type="text" name="pago">
                         <input type="submit" name="submit" value="Validar Compra">
                     </form>';
         }else{
@@ -89,16 +104,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             realizarCompra($conn, $pago);
             session_destroy();
             closeBD($conn);
-        
+            echo '<span style="color:green;">COMPRA REALIZADA EXITOSAMENTE</span>';
         }else{
             echo("NO SE HA INTRODUCIDO BIEN EL METODO DE PAGO");
         }
 
         
- 
     }
 }
 
 
+    
+
+ob_end_flush();
 ?>
 </html>

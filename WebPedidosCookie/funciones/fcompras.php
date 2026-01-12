@@ -3,11 +3,13 @@ require_once ("./funciones/funciones.php");
 require_once ("./funciones/fbd.php");
 
 
-function iniciarCarrito (){
-    if (!isset($_SESSION['carrito'])) {
-    $_SESSION['carrito'] = [];
+function iniciarCarrito() {
+    if (!isset($_COOKIE['carrito'])) {
+        $carrito = [];
+        setcookie('carrito', serialize($carrito), time() + (86400 * 30), "/");
     }
 }
+
 
 function cerrarSesion ($cookie_name){
     if (isset($_COOKIE['PHPSESSID'])){
@@ -20,23 +22,28 @@ function cerrarSesion ($cookie_name){
 }
 
 function agregarProducto($id, $cantidad) {
-
     $cantidad = (int) $cantidad;
 
     if ($cantidad <= 0) {
-        echo '<span style="color:red;">Introduce un número</span>';
         return;
     }
 
-    if (!isset($_SESSION['carrito'])) {
-        $_SESSION['carrito'] = [];
+    // Leer carrito desde la cookie
+    if (!isset($_COOKIE['carrito'])) {
+        $carrito = [];
+    } else {
+        $carrito = unserialize($_COOKIE['carrito']);
     }
 
-    if (isset($_SESSION['carrito'][$id])) {
-        $_SESSION['carrito'][$id] += $cantidad;
+    // Agregar o actualizar producto
+    if (isset($carrito[$id])) {
+        $carrito[$id] += $cantidad;
     } else {
-        $_SESSION['carrito'][$id] = $cantidad;
+        $carrito[$id] = $cantidad;
     }
+
+    // Guardar carrito en la cookie
+    setcookie('carrito', serialize($carrito), time() + (86400 * 30), "/");
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
@@ -45,31 +52,37 @@ function eliminarProducto($id, $cantidad) {
     $cantidad = (int) $cantidad;
 
     if ($cantidad <= 0) {
-        echo '<span style="color:red;">Introduce un número válido</span>';
         return;
     }
 
-    if (!isset($_SESSION['carrito'])) {
-        $_SESSION['carrito'] = [];
+    // Leer carrito desde la cookie
+    if (!isset($_COOKIE['carrito'])) {
+        $carrito = [];
+    } else {
+        $carrito = unserialize($_COOKIE['carrito']);
     }
 
-    if (isset($_SESSION['carrito'][$id])) {
-        // Restamos la cantidad
-        $_SESSION['carrito'][$id] -= $cantidad;
+    // Verificar si el producto existe en el carrito
+    if (isset($carrito[$id])) {
+        $carrito[$id] -= $cantidad;
 
-        // Si llega a 0 o menos, eliminamos el producto
-        if ($_SESSION['carrito'][$id] <= 0) {
-            unset($_SESSION['carrito'][$id]);
+        // Si la cantidad es 0 o menos, eliminamos el producto
+        if ($carrito[$id] <= 0) {
+            unset($carrito[$id]);
         }
-    }
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
+
+        // Guardar carrito actualizado
+        setcookie('carrito', serialize($carrito), time() + (86400 * 30), "/");
+
+    } 
 }
+
 
 
 function comprobarCarrito($conn){
     $flag = true;
-    foreach ($_SESSION['carrito'] as $producto => $cantidad){
+    $carrito = unserialize($_COOKIE['carrito']);
+    foreach ($carrito as $producto => $cantidad){
         $cotejar =  selectCol("SELECT QUANTITYINSTOCK FROM PRODUCTS WHERE PRODUCTCODE = '$producto'", $conn);
         if ($cantidad > $cotejar){
             $nombre = selectCol("SELECT PRODUCTNAME FROM PRODUCTS WHERE PRODUCTCODE = '$producto'", $conn);
@@ -88,7 +101,7 @@ function realizarCompra($conn, $pago){
     $status = "Unshipped";
     $total = 0;
     $orderlinenumber = 1;
-    
+    $carrito = unserialize($_COOKIE['carrito']);
     try{
         $conn->beginTransaction();
         $stmt = $conn->prepare("INSERT INTO ORDERS(ORDERNUMBER, ORDERDATE, REQUIREDDATE, SHIPPEDDATE, `STATUS`, COMMENTS, CUSTOMERNUMBER) VALUES (:ORDERNUMBER,:ORDERDATE,:REQUIREDDATE,NULL,:STATUS,NULL,:CUSTOMERNUMBER)");
@@ -100,7 +113,7 @@ function realizarCompra($conn, $pago){
         $stmt->execute();
     
     
-    foreach ($_SESSION['carrito'] as $producto => $cantidad){
+    foreach ($carrito as $producto => $cantidad){
         $precio = selectCOL("SELECT BUYPRICE FROM PRODUCTS WHERE PRODUCTCODE = '$producto'",$conn);
         $precioTotal = $precio * $cantidad;
         $total += $precioTotal;

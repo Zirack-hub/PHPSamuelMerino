@@ -52,6 +52,9 @@ function mostrarOpciones($clave, $resultado, $etiqueta,$mostrar=null){
 
 
 
+
+
+
 ?>
 
 
