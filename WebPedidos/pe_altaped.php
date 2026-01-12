@@ -24,7 +24,7 @@
             <?php
             
 
-            $conn = openBD(');
+            $conn = openBD();
             
             $resultado = selectASSOC("SELECT PRODUCTCODE, PRODUCTNAME FROM PRODUCTS WHERE QUANTITYINSTOCK > 0", $conn);
             mostrarOpciones("PRODUCTCODE", $resultado, "PRODUCTS", "PRODUCTNAME");

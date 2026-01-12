@@ -90,38 +90,20 @@ function realizarCompra($conn, $pago){
         $stmt->bindParam(':STATUS', $status);
         $stmt->bindParam(':CUSTOMERNUMBER', $_COOKIE['usuariopedidos']);
         $stmt->execute();
-        $conn->commit(); 
-    }
-    catch(PDOException $e){
-        if ($conn && $conn->inTransaction()) {
-            $conn->rollback();
-        }
-        echo "Connection failed: " . $e->getMessage();
-        echo "Codigo de error: " . $e->getCode() . "<br>";
-    }
+    
     
     foreach ($_SESSION['carrito'] as $producto => $cantidad){
         $precio = selectCOL("SELECT BUYPRICE FROM PRODUCTS WHERE PRODUCTCODE = '$producto'",$conn);
         $precioTotal = $precio * $cantidad;
         $total += $precioTotal;
 
-        try{
             $conn->beginTransaction();
             $stmt = $conn->prepare("UPDATE PRODUCTS SET QUANTITYINSTOCK = QUANTITYINSTOCK - :cantidad WHERE PRODUCTCODE = :producto");
             $stmt->bindParam(':producto', $producto);
             $stmt->bindParam(':cantidad', $cantidad);
             $stmt->execute();
-            $conn->commit(); 
-        }
-        catch(PDOException $e){
-            if ($conn && $conn->inTransaction()) {
-                $conn->rollback();
-            }
-            echo "Connection failed: " . $e->getMessage();
-            echo "C贸digo de error: " . $e->getCode() . "<br>";
-        }
+       
 
-        try{
             $conn->beginTransaction();
             $stmt = $conn->prepare("INSERT INTO ORDERDETAILS(ORDERNUMBER, PRODUCTCODE, QUANTITYORDERED, PRICEEACH, ORDERLINENUMBER) VALUES (:ORDERNUMBER,:PRODUCTCODE,:QUANTITYORDERED,:PRICEEACH, :ORDERLINENUMBER)");
             $stmt->bindParam(':ORDERNUMBER', $numero);
@@ -130,18 +112,9 @@ function realizarCompra($conn, $pago){
             $stmt->bindParam(':PRICEEACH', $precio);
             $stmt->bindParam(':ORDERLINENUMBER', $orderlinenumber);
             $stmt->execute();
-            $conn->commit(); 
-        }
-        catch(PDOException $e){
-            if ($conn && $conn->inTransaction()) {
-                $conn->rollback();
-            }
-            echo "Connection failed: " . $e->getMessage();
-            echo "Codigo de error: " . $e->getCode() . "<br>";
-        }
+        
     }
 
-    try{
         $conn->beginTransaction();
         $stmt = $conn->prepare("INSERT INTO PAYMENTS(CUSTOMERNUMBER, CHECKNUMBER, PAYMENTDATE, AMOUNT) VALUES (:CUSTOMERNUMBER,:CHECKNUMBER,:PAYMENTDATE,:AMOUNT)");
         $stmt->bindParam(':CUSTOMERNUMBER', $_COOKIE['usuariopedidos']);
