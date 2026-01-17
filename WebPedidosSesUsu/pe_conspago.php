@@ -4,10 +4,14 @@ require_once "./funciones/funciones.php";
 require_once "./funciones/fbd.php";
 require_once "./funciones/fcompras.php";
 
-
 if (!isset($_COOKIE['usuariopedidos'])) {
     header("Location: ./pe_login.php");
     exit();
+}
+$sesname = "usuariopedidos";
+if (session_status() == PHP_SESSION_NONE) {
+    session_name($sesname); 
+    session_start();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"
@@ -37,8 +41,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
             
             Inicio Busqueda <input type="date" name="inicio">
             Fin Busqueda <input type="date" name="fin">
-            cliente <input type="text" name="cliente">
-
             <input type="submit" name="submit" value="Añadir">
             <br>
             <input type="submit" name="submit" value="Cerrar Sesion">
@@ -56,38 +58,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $eleccion = limpiar_campos($_POST["submit"]);
-    
-    $inicio = (isset($_POST["inicio"]) && !empty($_POST["inicio"])) 
-    ? limpiar_campos($_POST["inicio"]) 
-    : '1800-01-01';
-
-    $fin = (isset($_POST["fin"]) && !empty($_POST["fin"])) 
-        ? limpiar_campos($_POST["fin"]) 
-        : date('Y-m-d');
-
-    $cliente = (isset($_POST["cliente"]) && !empty($_POST["cliente"])) 
-        ? limpiar_campos($_POST["cliente"]) 
-        : ($_COOKIE['usuariopedidos']) ;
-
+    $inicio = isset($_POST["inicio"])
+        ? limpiar_campos($_POST["inicio"])
+        : null;
+    $fin = isset($_POST["fin"])
+        ? limpiar_campos($_POST["fin"])
+        : null;
     
     if ($eleccion == "Añadir") {
+        if ($inicio === null or $fin === null){
+            echo "DEBES INCLUIR AMBAS FECHAS";
+        }else{
             $total = selectASSOC("SELECT 
-                                    P.CHECKNUMBER,
-                                    P.PAYMENTDATE,
-                                    P.AMOUNT,
-                                    C.CUSTOMERNAME
-                                FROM PAYMENTS P
-                                JOIN CUSTOMERS C ON C.CUSTOMERNUMBER = P.CUSTOMERNUMBER
-                                WHERE P.PAYMENTDATE BETWEEN '$inicio' AND '$fin'
-                                AND C.CUSTOMERNUMBER = '$cliente'
-                                ORDER BY P.PAYMENTDATE DESC", $conn);
-            $DINEROGASTADO = 0;
+                                    P.PRODUCTCODE,
+                                    P.PRODUCTNAME,
+                                    SUM(OD.QUANTITYORDERED) AS TOTAL_UNIDADES
+                                FROM ORDERS O
+                                JOIN ORDERDETAILS OD ON O.ORDERNUMBER = OD.ORDERNUMBER
+                                JOIN PRODUCTS P ON OD.PRODUCTCODE = P.PRODUCTCODE
+                                WHERE O.ORDERDATE BETWEEN '$inicio' AND '$fin'
+                                GROUP BY P.PRODUCTCODE, P.PRODUCTNAME
+                                ORDER BY TOTAL_UNIDADES DESC", $conn);
             foreach ($total as $linea){
-                echo "CHECKE: {$linea['CHECKNUMBER']}-------- FECHA: {$linea['PAYMENTDATE']}-------- IMPORTE: {$linea['AMOUNT']}$-------- NOMBRE: {$linea['CUSTOMERNAME']}<BR>";
-                $DINEROGASTADO += $linea['AMOUNT'];
+                echo "Producto: {$linea['PRODUCTNAME']}-------- Unidades vendidas: {$linea['TOTAL_UNIDADES']}<BR>";
             }
-            echo "TOTAL GASTADO: $DINEROGASTADO $";
-            
+        }   
     }
 }
 

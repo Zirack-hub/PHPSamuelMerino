@@ -21,9 +21,12 @@ function iniciarCarrito()
 }
 
 
-function cerrarSesion($cookie_name)
-{
-    $carrito = $_SESSION['carrito'] ?? [];
+function cerrarSesion($cookie_name){
+    if (isset($_SESSION['carrito'])) {
+        $carrito = $_SESSION['carrito'];
+    } else {
+        $carrito = [];
+    }
 
     // Nombre de la cookie del carrito
     if (isset($_COOKIE[$cookie_name])) {

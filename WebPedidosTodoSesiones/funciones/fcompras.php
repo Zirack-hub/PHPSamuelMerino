@@ -2,15 +2,24 @@
 require_once ("./funciones/funciones.php");
 require_once ("./funciones/fbd.php");
 
+$sesname = "usuariopedidos";
+if (session_status() == PHP_SESSION_NONE) {
+    session_name($sesname);
+    session_start();
+}
 
 function iniciarCarrito()
 {
+    global $sesname;
+
     if (!isset($_SESSION['carrito'])) {
 
-        if (isset($_COOKIE['usuariopedidos'])) {
-            $cookieCarrito = 'carrito' . $_COOKIE['usuariopedidos'];
+        if (isset($_SESSION[$sesname])) {
+            var_dump($_SESSION[$sesname]);
+            $cookieCarrito = 'carrito' . $_SESSION[$sesname];
 
             if (isset($_COOKIE[$cookieCarrito])) {
+                $_SESSION[$sesname];
                 $_SESSION['carrito'] = unserialize($_COOKIE[$cookieCarrito]);
                 return;
             }
@@ -20,14 +29,18 @@ function iniciarCarrito()
     }
 }
 
+function cerrarSesion($cookie_name){
+    global $sesname;
 
-function cerrarSesion($cookie_name)
-{
-    $carrito = $_SESSION['carrito'] ?? [];
+    if (isset($_SESSION['carrito'])) {
+        $carrito = $_SESSION['carrito'];
+    } else {
+        $carrito = [];
+    }
 
     // Nombre de la cookie del carrito
-    if (isset($_COOKIE[$cookie_name])) {
-        $carritoCookieName = 'carrito' . $_COOKIE[$cookie_name];
+    if (isset($_SESSION[$sesname])) {
+        $carritoCookieName = 'carrito' . $_SESSION[$sesname];
 
         // Guardar carrito antes de cerrar sesión
         setcookie(
@@ -39,19 +52,14 @@ function cerrarSesion($cookie_name)
     }
 
     // Destruir sesión
-    if (isset($_COOKIE['PHPSESSID'])) {
+    if (isset($_COOKIE[$sesname])) {
         session_destroy();
-        setcookie("PHPSESSID", "", time() - 3600, "/");
+        setcookie($sesname, "", time() - 3600, "/");
     }
-
-    // Eliminar cookie del usuario
-    setcookie($cookie_name, "", time() - 3600, "/");
 
     header("Location: ./pe_login.php");
     exit();
 }
-
-
 
 function agregarProducto($id, $cantidad) {
 
@@ -100,7 +108,6 @@ function eliminarProducto($id, $cantidad) {
     exit();
 }
 
-
 function comprobarCarrito($conn){
     $flag = true;
     foreach ($_SESSION['carrito'] as $producto => $cantidad){
@@ -114,15 +121,25 @@ function comprobarCarrito($conn){
     return $flag;
 }
 
-
 function realizarCompra($conn, $pago){
+    global $sesname;
     $fecha = date("Y-m-d H:i:s");
     $numero = selectCol("SELECT ORDERNUMBER FROM ORDERS ORDER BY ORDERNUMBER DESC LIMIT 1", $conn);
     $numero += 1;
     $status = "Unshipped";
     $total = 0;
     $orderlinenumber = 1;
-    
+    if (!isset($_SESSION[$sesname]) && isset($_COOKIE[$sesname])) {
+    $_SESSION[$sesname] = $_COOKIE[$sesname];
+}
+
+// Ahora ya se puede usar seguro
+if (isset($_SESSION[$sesname])) {
+    var_dump($_SESSION[$sesname]);
+} else {
+    echo "No hay usuario logueado";
+}
+
     try{
         $conn->beginTransaction();
         $stmt = $conn->prepare("INSERT INTO ORDERS(ORDERNUMBER, ORDERDATE, REQUIREDDATE, SHIPPEDDATE, `STATUS`, COMMENTS, CUSTOMERNUMBER) VALUES (:ORDERNUMBER,:ORDERDATE,:REQUIREDDATE,NULL,:STATUS,NULL,:CUSTOMERNUMBER)");
@@ -130,21 +147,19 @@ function realizarCompra($conn, $pago){
         $stmt->bindParam(':ORDERDATE', $fecha);
         $stmt->bindParam(':REQUIREDDATE', $fecha);
         $stmt->bindParam(':STATUS', $status);
-        $stmt->bindParam(':CUSTOMERNUMBER', $_COOKIE['usuariopedidos']);
+        $stmt->bindParam(':CUSTOMERNUMBER', $_SESSION[$sesname]);
         $stmt->execute();
     
-    
-    foreach ($_SESSION['carrito'] as $producto => $cantidad){
-        $precio = selectCOL("SELECT BUYPRICE FROM PRODUCTS WHERE PRODUCTCODE = '$producto'",$conn);
-        $precioTotal = $precio * $cantidad;
-        $total += $precioTotal;
+        foreach ($_SESSION['carrito'] as $producto => $cantidad){
+            $precio = selectCOL("SELECT BUYPRICE FROM PRODUCTS WHERE PRODUCTCODE = '$producto'",$conn);
+            $precioTotal = $precio * $cantidad;
+            $total += $precioTotal;
 
             $stmt = $conn->prepare("UPDATE PRODUCTS SET QUANTITYINSTOCK = QUANTITYINSTOCK - :cantidad WHERE PRODUCTCODE = :producto");
             $stmt->bindParam(':producto', $producto);
             $stmt->bindParam(':cantidad', $cantidad);
             $stmt->execute();
        
-
             $stmt = $conn->prepare("INSERT INTO ORDERDETAILS(ORDERNUMBER, PRODUCTCODE, QUANTITYORDERED, PRICEEACH, ORDERLINENUMBER) VALUES (:ORDERNUMBER,:PRODUCTCODE,:QUANTITYORDERED,:PRICEEACH, :ORDERLINENUMBER)");
             $stmt->bindParam(':ORDERNUMBER', $numero);
             $stmt->bindParam(':PRODUCTCODE', $producto);
@@ -153,25 +168,26 @@ function realizarCompra($conn, $pago){
             $stmt->bindParam(':ORDERLINENUMBER', $orderlinenumber);
             $stmt->execute();
             $orderlinenumber +=1;
-    }
+        }
 
         $stmt = $conn->prepare("INSERT INTO PAYMENTS(CUSTOMERNUMBER, CHECKNUMBER, PAYMENTDATE, AMOUNT) VALUES (:CUSTOMERNUMBER,:CHECKNUMBER,:PAYMENTDATE,:AMOUNT)");
-        $stmt->bindParam(':CUSTOMERNUMBER', $_COOKIE['usuariopedidos']);
+        $stmt->bindParam(':CUSTOMERNUMBER', $_SESSION[$sesname]);
         $stmt->bindParam(':CHECKNUMBER', $pago);
         $stmt->bindParam(':PAYMENTDATE', $fecha);
         $stmt->bindParam(':AMOUNT', $total);
         $stmt->execute();
         $conn->commit(); 
-        if (isset($_COOKIE['carrito' . $_COOKIE['usuariopedidos']])) {
-               setcookie('carrito' . $_COOKIE['usuariopedidos'], "", time() - 3600, "/");
-            }
+
+        if (isset($_COOKIE['carrito' . $_SESSION[$sesname]])) {
+            setcookie('carrito' . $_SESSION[$sesname], "", time() - 3600, "/");
+        }
     }
     catch(PDOException $e){
         if ($conn && $conn->inTransaction()) {
             $conn->rollback();
         }
         echo "Connection failed: " . $e->getMessage();
-        echo "C贸digo de error: " . $e->getCode() . "<br>";
+        echo "Código de error: " . $e->getCode() . "<br>";
     }
 }
 

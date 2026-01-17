@@ -2,37 +2,32 @@
 require_once ("./funciones/funciones.php");
 require_once ("./funciones/fbd.php");
 
+$sesname = "usuariopedidos";
+if (session_status() == PHP_SESSION_NONE) {
+    session_name($sesname);
+    session_start();
+}
+
 function nombreCarrito() {
-    return 'carrito' . $_COOKIE['usuariopedidos'];
+    return 'carrito' . $_SESSION['usuariopedidos'];
 }
 
 function iniciarCarrito() {
-    if (!isset($_COOKIE['usuariopedidos'])) return;
-
     $cookieCarrito = nombreCarrito();
+    if (!$cookieCarrito) return;
+
     if (!isset($_COOKIE[$cookieCarrito])) {
         setcookie($cookieCarrito, serialize([]), time() + (86400 * 30), "/");
     }
 }
 
-function cerrarSesion($cookie_name) {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-    session_destroy();
-    setcookie("PHPSESSID", "", time() - 3600, "/");
-    setcookie($cookie_name, "", time() - 3600, "/");
-    header("Location: ./pe_login.php");
-    exit();
-}
-
 function agregarProducto($id, $cantidad) {
-    if (!isset($_COOKIE['usuariopedidos'])) return;
+    $cookieCarrito = nombreCarrito();
+    if (!$cookieCarrito) return;
 
     $cantidad = (int)$cantidad;
     if ($cantidad <= 0) return;
 
-    $cookieCarrito = nombreCarrito();
     $carrito = isset($_COOKIE[$cookieCarrito]) ? unserialize($_COOKIE[$cookieCarrito]) : [];
 
     if (isset($carrito[$id])) {
@@ -47,13 +42,11 @@ function agregarProducto($id, $cantidad) {
 }
 
 function eliminarProducto($id, $cantidad) {
-    if (!isset($_COOKIE['usuariopedidos'])) return;
+    $cookieCarrito = nombreCarrito();
+    if (!$cookieCarrito || !isset($_COOKIE[$cookieCarrito])) return;
 
     $cantidad = (int)$cantidad;
     if ($cantidad <= 0) return;
-
-    $cookieCarrito = nombreCarrito();
-    if (!isset($_COOKIE[$cookieCarrito])) return;
 
     $carrito = unserialize($_COOKIE[$cookieCarrito]);
 
@@ -66,11 +59,32 @@ function eliminarProducto($id, $cantidad) {
     }
 }
 
-function comprobarCarrito($conn) {
-    if (!isset($_COOKIE['usuariopedidos'])) return true;
+/**
+ * Función unificada para cerrar sesión
+ * No borra la cookie del carrito
+ */
+function cerrarSesion() {
+    global $sesname;
 
+    if (session_status() === PHP_SESSION_NONE) {
+        session_name($sesname);
+        session_start();
+    }
+
+    // Borra la cookie de la sesión y destruye la sesión
+    if (isset($_COOKIE[$sesname])) {
+        setcookie($sesname, "", time() - 3600, "/");
+    }
+    session_destroy();
+    setcookie("PHPSESSID", "", time() - 3600, "/");
+
+    header("Location: ./pe_login.php");
+    exit();
+}
+
+function comprobarCarrito($conn) {
     $cookieCarrito = nombreCarrito();
-    if (!isset($_COOKIE[$cookieCarrito])) return true;
+    if (!$cookieCarrito || !isset($_COOKIE[$cookieCarrito])) return true;
 
     $carrito = unserialize($_COOKIE[$cookieCarrito]);
 
@@ -87,10 +101,8 @@ function comprobarCarrito($conn) {
 }
 
 function realizarCompra($conn, $pago) {
-    if (!isset($_COOKIE['usuariopedidos'])) return;
-
     $cookieCarrito = nombreCarrito();
-    if (!isset($_COOKIE[$cookieCarrito])) return;
+    if (!$cookieCarrito || !isset($_COOKIE[$cookieCarrito])) return;
 
     $carrito = unserialize($_COOKIE[$cookieCarrito]);
     $fecha = date("Y-m-d H:i:s");
@@ -112,7 +124,7 @@ function realizarCompra($conn, $pago) {
             ':ORDERDATE' => $fecha,
             ':REQUIREDDATE' => $fecha,
             ':STATUS' => $status,
-            ':CUSTOMERNUMBER' => $_COOKIE['usuariopedidos']
+            ':CUSTOMERNUMBER' => $_SESSION['usuariopedidos']
         ]);
 
         foreach ($carrito as $producto => $cantidad) {
@@ -150,14 +162,13 @@ function realizarCompra($conn, $pago) {
              VALUES (:CUSTOMERNUMBER, :CHECKNUMBER, :PAYMENTDATE, :AMOUNT)"
         );
         $stmt->execute([
-            ':CUSTOMERNUMBER' => $_COOKIE['usuariopedidos'],
+            ':CUSTOMERNUMBER' => $_SESSION['usuariopedidos'],
             ':CHECKNUMBER' => $pago,
             ':PAYMENTDATE' => $fecha,
             ':AMOUNT' => $total
         ]);
 
         $conn->commit();
-        setcookie($cookieCarrito, "", time() - 3600, "/");
 
     } catch (PDOException $e) {
         if ($conn->inTransaction()) {

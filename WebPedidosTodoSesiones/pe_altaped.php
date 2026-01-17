@@ -1,17 +1,19 @@
 <?php
+ob_start();
+
 if (!isset($_COOKIE['usuariopedidos'])) {
     header("Location: ./pe_login.php");
     exit();
 }
 session_start();
-ob_start();
 require_once "./funciones/funciones.php";
 require_once "./funciones/fbd.php";
 require_once "./funciones/fcompras.php";
 
 iniciarCarrito();
 
-
+var_dump($_SESSION['usuariopedidos']); 
+var_dump($_SESSION['carrito']); 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"
     && isset($_POST["submit"])
@@ -81,7 +83,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     if ($eleccion == "Añadir") {
         agregarProducto($producto, $cantidad);
-        var_dump($_SESSION['carrito']);
     }elseif ($eleccion == "Eliminar") {
         eliminarProducto($producto, $cantidad);
     }elseif ($eleccion == "Finalizar Compra") {
