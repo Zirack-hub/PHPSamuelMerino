@@ -34,6 +34,10 @@
                 echo "<a href='./pe_consprodstock.php'> Ver historial</a><br>";
                 echo "STOCK LINEAS PRODUCCION: <br>";
                 echo "<a href='./pe_constock.php'> Ver historial</a><br>";
+                echo "BUSQUEDA POR FECHAS: <br>";
+                echo "<a href='./pe_todprod.php'> Ver historial</a><br>";
+                echo "BUSQUEDA POR CLIENTES: <br>";
+                echo "<a href='./pe_todprod.php'> Ver historial</a><br>";
                 
                 echo '
                 <form name="alta" action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '" method="post">
@@ -44,7 +48,8 @@
                 
             }
             else {
-                echo "El usuario y la contraseña no coinciden";
+                echo "El usuario y la contraseña no coinciden<br>";
+                echo "<a href='./pe_login.php'> Volver login</a><br>";
             }
         }
         elseif ($eleccion == "Cerrar Sesión") {
