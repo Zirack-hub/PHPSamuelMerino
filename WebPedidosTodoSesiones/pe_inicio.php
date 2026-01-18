@@ -1,15 +1,11 @@
 <?php
+session_start();
 require_once ("./funciones/funciones.php");
 require_once ("./funciones/fbd.php");
 require_once ("./funciones/fcompras.php");
 $conn = openBD();
 
-$sesname = "usuariopedidos";
 
-if (session_status() == PHP_SESSION_NONE) {
-    session_name($sesname); 
-    session_start();
-}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"
     && isset($_POST["submit"])
@@ -31,7 +27,7 @@ if(!isset($_SESSION[$sesname])) {
             if ($registro != null) {
                 $name = selectCol("SELECT CUSTOMERNAME FROM CUSTOMERS WHERE CUSTOMERNUMBER = '$usuario'",$conn);
 
-                $_SESSION[$sesname]= $registro;
+                $_SESSION['usuariopedidos']= $registro;
 
                 echo "Has iniciado sesión como $name <br>";
                 echo "COMPRAS: <br>";
@@ -56,11 +52,11 @@ if(!isset($_SESSION[$sesname])) {
             }
         }
         elseif ($eleccion == "Cerrar Sesión") {
-            cerrarSesion($sesname);
+            cerrarSesion('usuariopedidos');
         }
     }
 } else {
-    $id = (int)$_SESSION[$sesname];
+    $id = (int)$_SESSION['usuariopedidos'];
     $name = selectCol("SELECT CUSTOMERNAME FROM CUSTOMERS WHERE CUSTOMERNUMBER = $id",$conn);
 
     echo "Has iniciado sesión como $name <br>";

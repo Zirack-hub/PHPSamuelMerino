@@ -1,11 +1,12 @@
 <?php
+session_start();
 ob_start();
 
-if (!isset($_COOKIE['usuariopedidos'])) {
+if (!isset($_COOKIE['PHPSESSID'])) {
     header("Location: ./pe_login.php");
     exit();
 }
-session_start();
+
 require_once "./funciones/funciones.php";
 require_once "./funciones/fbd.php";
 require_once "./funciones/fcompras.php";

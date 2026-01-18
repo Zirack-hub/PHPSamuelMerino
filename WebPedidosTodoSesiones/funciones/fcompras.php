@@ -2,11 +2,8 @@
 require_once ("./funciones/funciones.php");
 require_once ("./funciones/fbd.php");
 
-$sesname = "usuariopedidos";
-if (session_status() == PHP_SESSION_NONE) {
-    session_name($sesname);
-    session_start();
-}
+$sesname = "PHPSESSID";
+
 
 function iniciarCarrito()
 {
@@ -135,7 +132,7 @@ function realizarCompra($conn, $pago){
 
 // Ahora ya se puede usar seguro
 if (isset($_SESSION[$sesname])) {
-    var_dump($_SESSION[$sesname]);
+    var_dump($_SESSION['usuariopedidos']);
 } else {
     echo "No hay usuario logueado";
 }
@@ -147,7 +144,7 @@ if (isset($_SESSION[$sesname])) {
         $stmt->bindParam(':ORDERDATE', $fecha);
         $stmt->bindParam(':REQUIREDDATE', $fecha);
         $stmt->bindParam(':STATUS', $status);
-        $stmt->bindParam(':CUSTOMERNUMBER', $_SESSION[$sesname]);
+        $stmt->bindParam(':CUSTOMERNUMBER', $_SESSION['usuariopedidos']);
         $stmt->execute();
     
         foreach ($_SESSION['carrito'] as $producto => $cantidad){
@@ -171,15 +168,15 @@ if (isset($_SESSION[$sesname])) {
         }
 
         $stmt = $conn->prepare("INSERT INTO PAYMENTS(CUSTOMERNUMBER, CHECKNUMBER, PAYMENTDATE, AMOUNT) VALUES (:CUSTOMERNUMBER,:CHECKNUMBER,:PAYMENTDATE,:AMOUNT)");
-        $stmt->bindParam(':CUSTOMERNUMBER', $_SESSION[$sesname]);
+        $stmt->bindParam(':CUSTOMERNUMBER', $_SESSION['usuariopedidos']);
         $stmt->bindParam(':CHECKNUMBER', $pago);
         $stmt->bindParam(':PAYMENTDATE', $fecha);
         $stmt->bindParam(':AMOUNT', $total);
         $stmt->execute();
         $conn->commit(); 
 
-        if (isset($_COOKIE['carrito' . $_SESSION[$sesname]])) {
-            setcookie('carrito' . $_SESSION[$sesname], "", time() - 3600, "/");
+        if (isset($_COOKIE['carrito' . $_SESSION['usuariopedidos']])) {
+            setcookie('carrito' . $_SESSION['usuariopedidos'], "", time() - 3600, "/");
         }
     }
     catch(PDOException $e){
